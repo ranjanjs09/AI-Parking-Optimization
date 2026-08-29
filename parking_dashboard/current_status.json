@@ -1,0 +1,20 @@
+{
+  "spots": {
+    "spot_1": "empty",
+    "spot_2": "empty",
+    "spot_3": "occupied",
+    "spot_4": "empty",
+    "spot_5": "empty",
+    "spot_6": "empty",
+    "spot_7": "empty",
+    "spot_8": "occupied",
+    "spot_9": "empty",
+    "spot_10": "empty",
+    "spot_11": "occupied",
+    "spot_12": "occupied"
+  },
+  "last_updated": "2026-08-30 00:26:53",
+  "total": 12,
+  "occupied": 4,
+  "available": 8
+}
