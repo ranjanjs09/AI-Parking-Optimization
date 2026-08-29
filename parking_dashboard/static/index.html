@@ -5,118 +5,241 @@
 <title>AI Parking Dashboard</title>
 <style>
     :root {
-        --empty-color: #22c55e;
-        --occupied-color: #ef4444;
-        --bg: #0f172a;
-        --card-bg: #1e293b;
-        --text: #f1f5f9;
-        --muted: #94a3b8;
+        --bg-1: #050505;
+        --bg-2: #101010;
+        --panel: rgba(22, 22, 22, 0.9);
+        --panel-soft: rgba(39, 39, 39, 0.9);
+        --panel-strong: #171717;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #f5f5f5;
+        --muted: #b5b5b5;
+        --muted-strong: #d4d4d4;
+        --empty-color: #7dd3a8;
+        --occupied-color: #f87171;
+        --shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
     }
+
     * { box-sizing: border-box; }
+
     body {
         margin: 0;
+        min-height: 100vh;
         font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-        background: var(--bg);
+        background:
+            radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 25%),
+            linear-gradient(135deg, var(--bg-1), var(--bg-2));
         color: var(--text);
-        padding: 24px;
+        padding: 32px 20px 24px;
     }
+
+    .dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
     header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
+        gap: 20px;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 24px;
+        background: rgba(18, 18, 18, 0.9);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 24px 28px;
+        box-shadow: var(--shadow);
+        margin-bottom: 28px;
     }
-    h1 { margin: 0; font-size: 1.6rem; }
-    .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .brand-mark {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        background: linear-gradient(135deg, #2a2a2a, #101010);
+        border: 1px solid var(--border);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(1.6rem, 2.2vw, 2.4rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 4px;
+        letter-spacing: 0.02em;
+    }
 
     .stats {
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
     }
+
     .stat-card {
-        background: var(--card-bg);
-        border-radius: 10px;
-        padding: 12px 18px;
+        background: linear-gradient(180deg, rgba(30,30,30,0.96), rgba(18,18,18,0.94));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px 18px;
         text-align: center;
-        min-width: 90px;
+        min-width: 120px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
     }
-    .stat-card .num { font-size: 1.6rem; font-weight: 700; }
-    .stat-card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .stat-card .num {
+        font-size: clamp(1.5rem, 2vw, 2rem);
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .stat-card .label {
+        font-size: 0.7rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-top: 8px;
+    }
+
     .stat-available .num { color: var(--empty-color); }
     .stat-occupied .num { color: var(--occupied-color); }
+    .stat-total .num { color: var(--muted-strong); }
 
     #grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 16px;
     }
+
     .spot {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 16px 10px;
+        position: relative;
+        background: linear-gradient(180deg, rgba(26,26,26,0.98), rgba(13,13,13,0.95));
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px 12px 14px;
         text-align: center;
-        border: 2px solid transparent;
-        transition: border-color 0.3s, transform 0.15s;
+        min-height: 128px;
+        transition: transform 0.16s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
     }
-    .spot.empty { border-color: var(--empty-color); }
-    .spot.occupied { border-color: var(--occupied-color); }
+
+    .spot:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px rgba(0,0,0,0.3);
+    }
+
+    .spot.empty { border-color: rgba(125, 211, 168, 0.45); }
+    .spot.occupied { border-color: rgba(248, 113, 113, 0.45); }
+
     .spot .dot {
-        width: 14px; height: 14px;
+        width: 14px;
+        height: 14px;
         border-radius: 50%;
-        margin: 0 auto 8px;
+        margin: 0 auto 12px;
+        box-shadow: 0 0 20px currentColor;
     }
-    .spot.empty .dot { background: var(--empty-color); }
-    .spot.occupied .dot { background: var(--occupied-color); }
-    .spot .id { font-weight: 600; font-size: 0.95rem; }
-    .spot .label { font-size: 0.75rem; color: var(--muted); text-transform: capitalize; margin-top: 2px; }
+
+    .spot.empty .dot {
+        background: var(--empty-color);
+        color: var(--empty-color);
+    }
+
+    .spot.occupied .dot {
+        background: var(--occupied-color);
+        color: var(--occupied-color);
+    }
+
+    .spot .id {
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.03em;
+    }
+
+    .spot .label {
+        font-size: 0.72rem;
+        color: var(--muted);
+        text-transform: capitalize;
+        letter-spacing: 0.12em;
+        margin-top: 6px;
+    }
+
+    .spot.empty .label { color: var(--empty-color); }
+    .spot.occupied .label { color: var(--occupied-color); }
 
     #empty-state {
         color: var(--muted);
         text-align: center;
-        padding: 60px 20px;
+        padding: 74px 20px;
+        border: 1px dashed rgba(255,255,255,0.15);
+        border-radius: 18px;
+        background: rgba(20,20,20,0.7);
         display: none;
+        margin-top: 12px;
     }
+
+    code {
+        color: var(--muted-strong);
+        background: rgba(255,255,255,0.04);
+        padding: 3px 6px;
+        border-radius: 6px;
+    }
+
     footer {
-        margin-top: 28px;
+        margin-top: 26px;
         color: var(--muted);
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         text-align: center;
+        letter-spacing: 0.04em;
     }
 </style>
 </head>
 <body>
 
-<header>
-    <div>
-        <h1>🚗 AI Parking Dashboard</h1>
-        <div class="subtitle" id="last-updated">Waiting for data...</div>
-    </div>
-    <div class="stats">
-        <div class="stat-card stat-available">
-            <div class="num" id="stat-available">-</div>
-            <div class="label">Available</div>
+<div class="dashboard">
+    <header>
+        <div class="brand">
+            <div class="brand-mark">P</div>
+            <div>
+                <h1>Parking Monitor</h1>
+                <div class="subtitle" id="last-updated">Waiting for data...</div>
+            </div>
         </div>
-        <div class="stat-card stat-occupied">
-            <div class="num" id="stat-occupied">-</div>
-            <div class="label">Occupied</div>
+        <div class="stats">
+            <div class="stat-card stat-available">
+                <div class="num" id="stat-available">-</div>
+                <div class="label">Available</div>
+            </div>
+            <div class="stat-card stat-occupied">
+                <div class="num" id="stat-occupied">-</div>
+                <div class="label">Occupied</div>
+            </div>
+            <div class="stat-card stat-total">
+                <div class="num" id="stat-total">-</div>
+                <div class="label">Total</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="num" id="stat-total">-</div>
-            <div class="label">Total Spots</div>
-        </div>
-    </div>
-</header>
+    </header>
 
-<div id="grid"></div>
-<div id="empty-state">
-    Koi data nahi mila abhi tak. <br>
-    <code>push_live_status.py</code> chalao ya <code>/api/status</code> pe POST karo.
+    <div id="grid"></div>
+    <div id="empty-state">
+        No data available yet. <br>
+        Run <code>push_live_status.py</code> or POST to <code>/api/status</code>.
+    </div>
+
+    <footer>Auto-refreshing every 3 seconds &middot; AI Parking Optimization</footer>
 </div>
-
-<footer>Auto-refreshing every 3 seconds &middot; AI Parking Optimization &mdash; Module 2</footer>
 
 <script>
 async function refreshStatus() {
