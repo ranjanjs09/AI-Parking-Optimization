@@ -1,28 +1,5 @@
 """
-push_live_status.py
-----------------------
-Ye Module 1 (CV model) ko Module 2 (dashboard) se JODTA hai.
-
-Ye script:
-    1. Tumhare trained model.pth aur spots.json (Module 1 se) load karta hai
-    2. Video/webcam/image ko har N seconds me process karta hai
-    3. Result ko dashboard ke /api/status endpoint pe POST kar deta hai
-
-Isse dashboard REAL-TIME me update hota rehta hai, jaise real production
-system me hota - CCTV feed -> CV model -> backend -> live dashboard.
-
-HOW TO USE:
-
-Static image ko baar-baar "refresh" karke bhejna (demo ke liye achha hai,
-jaise tumhara test.jpg):
-    python push_live_status.py --mode image --source test.jpg \
-        --spots spots.json --model model.pth --interval 5
-
-Webcam/video ko continuously process karna:
-    python push_live_status.py --mode video --source 0 \
-        --spots spots.json --model model.pth --interval 5
-
-PEHLE Flask server (app.py) ek alag terminal me chala hua hona chahiye.
+push_live_status.py - Module 1 (CV model) ko Module 2 (dashboard) se jodta hai.
 """
 
 import argparse
@@ -77,23 +54,27 @@ def run_inference(model, frame, spots, device):
 
 def push_to_dashboard(api_url, status_dict):
     try:
-        res = requests.post(api_url, json=status_dict, timeout=3)
+        res = requests.post(
+            api_url, json=status_dict, timeout=3,
+            proxies={"http": None, "https": None}
+        )
         if res.status_code == 200:
             print(f"[{time.strftime('%H:%M:%S')}] Pushed: {status_dict}")
         else:
             print(f"Dashboard returned status {res.status_code}: {res.text}")
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as e:
         print("ERROR: Could not reach dashboard. Is 'python app.py' running in another terminal?")
+        print(f"   (details: {e})")
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["image", "video"], required=True)
-    parser.add_argument("--source", required=True, help="Image/video path, 0 for webcam, or rtsp:// URL")
+    parser.add_argument("--source", required=True)
     parser.add_argument("--spots", default="spots.json")
     parser.add_argument("--model", default="model.pth")
-    parser.add_argument("--api_url", default="http://localhost:5001/api/status")
-    parser.add_argument("--interval", type=float, default=5.0, help="Seconds between each push")
+    parser.add_argument("--api_url", default="http://127.0.0.1:5001/api/status")
+    parser.add_argument("--interval", type=float, default=5.0)
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -105,8 +86,6 @@ def main():
     print(f"Pushing updates to {args.api_url} every {args.interval}s. Press Ctrl+C to stop.")
 
     if args.mode == "image":
-        # Same static image ko baar baar re-process karke "live feed" simulate karta hai
-        # (demo/testing ke liye - real deployment me --mode video use hoga)
         while True:
             frame = cv2.imread(args.source)
             if frame is None:
@@ -114,8 +93,7 @@ def main():
             status = run_inference(model, frame, spots, device)
             push_to_dashboard(args.api_url, status)
             time.sleep(args.interval)
-
-    else:  # video
+    else:
         source = int(args.source) if args.source.isdigit() else args.source
         cap = cv2.VideoCapture(source)
         if not cap.isOpened():
@@ -125,7 +103,6 @@ def main():
         while True:
             ret, frame = cap.read()
             if not ret:
-                # video khatam ho gaya to loop se dobara shuru karo (demo ke liye)
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 continue
 
