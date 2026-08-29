@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Parking Dashboard</title>
+<style>
+    :root {
+        --empty-color: #22c55e;
+        --occupied-color: #ef4444;
+        --bg: #0f172a;
+        --card-bg: #1e293b;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 24px;
+    }
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    h1 { margin: 0; font-size: 1.6rem; }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    .stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 10px;
+        padding: 12px 18px;
+        text-align: center;
+        min-width: 90px;
+    }
+    .stat-card .num { font-size: 1.6rem; font-weight: 700; }
+    .stat-card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-available .num { color: var(--empty-color); }
+    .stat-occupied .num { color: var(--occupied-color); }
+
+    #grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 14px;
+    }
+    .spot {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 16px 10px;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: border-color 0.3s, transform 0.15s;
+    }
+    .spot.empty { border-color: var(--empty-color); }
+    .spot.occupied { border-color: var(--occupied-color); }
+    .spot .dot {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        margin: 0 auto 8px;
+    }
+    .spot.empty .dot { background: var(--empty-color); }
+    .spot.occupied .dot { background: var(--occupied-color); }
+    .spot .id { font-weight: 600; font-size: 0.95rem; }
+    .spot .label { font-size: 0.75rem; color: var(--muted); text-transform: capitalize; margin-top: 2px; }
+
+    #empty-state {
+        color: var(--muted);
+        text-align: center;
+        padding: 60px 20px;
+        display: none;
+    }
+    footer {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🚗 AI Parking Dashboard</h1>
+        <div class="subtitle" id="last-updated">Waiting for data...</div>
+    </div>
+    <div class="stats">
+        <div class="stat-card stat-available">
+            <div class="num" id="stat-available">-</div>
+            <div class="label">Available</div>
+        </div>
+        <div class="stat-card stat-occupied">
+            <div class="num" id="stat-occupied">-</div>
+            <div class="label">Occupied</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-total">-</div>
+            <div class="label">Total Spots</div>
+        </div>
+    </div>
+</header>
+
+<div id="grid"></div>
+<div id="empty-state">
+    Koi data nahi mila abhi tak. <br>
+    <code>push_live_status.py</code> chalao ya <code>/api/status</code> pe POST karo.
+</div>
+
+<footer>Auto-refreshing every 3 seconds &middot; AI Parking Optimization &mdash; Module 2</footer>
+
+<script>
+async function refreshStatus() {
+    try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        document.getElementById('stat-available').textContent = data.available;
+        document.getElementById('stat-occupied').textContent = data.occupied;
+        document.getElementById('stat-total').textContent = data.total;
+        document.getElementById('last-updated').textContent =
+            data.last_updated ? `Last updated: ${data.last_updated}` : 'Waiting for data...';
+
+        const grid = document.getElementById('grid');
+        const emptyState = document.getElementById('empty-state');
+        const spots = data.spots || {};
+        const spotIds = Object.keys(spots);
+
+        if (spotIds.length === 0) {
+            grid.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+        grid.style.display = 'grid';
+        emptyState.style.display = 'none';
+
+        grid.innerHTML = spotIds.map(id => {
+            const status = spots[id];
+            return `
+                <div class="spot ${status}">
+                    <div class="dot"></div>
+                    <div class="id">${id}</div>
+                    <div class="label">${status}</div>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('Failed to fetch status', err);
+    }
+}
+
+refreshStatus();
+setInterval(refreshStatus, 3000);
+</script>
+
+</body>
+</html>
