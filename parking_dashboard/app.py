@@ -43,6 +43,11 @@ def recompute_counts():
 
 
 @app.route("/")
+def welcome_page():
+    return send_from_directory("static", "welcome.html")
+
+
+@app.route("/dashboard")
 def dashboard():
     return send_from_directory("static", "index.html")
 

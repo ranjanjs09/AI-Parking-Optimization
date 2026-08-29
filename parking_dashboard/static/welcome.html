@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Parking Optimization</title>
+  <style>
+    :root {
+      --bg: #070707;
+      --bg-2: #121212;
+      --panel: rgba(20, 20, 20, 0.9);
+      --panel-soft: rgba(31, 31, 31, 0.9);
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #b7b7b7;
+      --steel: #d7d7d7;
+      --accent: #d1d5db;
+      --accent-2: #9ca3af;
+      --success: #7dd3a8;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --shadow: 0 28px 60px rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 26%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(18, 18, 18, 0.9);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #1d1d1d, #090909);
+      border: 1px solid var(--border);
+      font-size: 1.2rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .nav a { transition: color 0.2s ease; }
+    .nav a:hover { color: var(--text); }
+
+    .nav .btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 30px;
+      align-items: center;
+      padding: 56px 0 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 18px rgba(125, 211, 168, 0.9);
+    }
+
+    h1 {
+      font-size: clamp(2.6rem, 5vw, 5rem);
+      line-height: 0.96;
+      letter-spacing: -0.06em;
+      margin: 20px 0 16px;
+    }
+
+    .lead {
+      max-width: 620px;
+      font-size: 1.08rem;
+      line-height: 1.75;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 22px;
+      border-radius: 13px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .button:hover { transform: translateY(-1px); }
+
+    .button.primary {
+      background: linear-gradient(135deg, #e5e7eb, #a3a3a3);
+      color: #111;
+    }
+
+    .button.secondary {
+      background: rgba(255,255,255,0.03);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .mini-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .mini-stat {
+      min-width: 110px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+    }
+
+    .mini-stat strong {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .mini-stat span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-panel {
+      background: linear-gradient(180deg, rgba(22,22,22,0.96), rgba(12,12,12,0.96));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--steel);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(125, 211, 168, 0.08);
+      color: var(--success);
+      border: 1px solid rgba(125, 211, 168, 0.24);
+    }
+
+    .panel-body { padding: 22px 20px 18px; }
+
+    .lot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .lot-dot {
+      padding: 16px 10px;
+      text-align: center;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .lot-dot .icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      box-shadow: 0 0 18px rgba(255,255,255,0.18);
+    }
+
+    .lot-dot.empty .icon { background: var(--success); }
+    .lot-dot.occupied .icon { background: var(--danger); }
+
+    .lot-dot strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+
+    .lot-dot span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-box {
+      padding: 14px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+    }
+
+    .summary-box strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+
+    .summary-box span {
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .features { padding-top: 52px; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      letter-spacing: -0.05em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(19, 19, 19, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      font-size: 1.2rem;
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .card p {
+      margin: 0;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      .nav { flex-wrap: wrap; }
+      .mini-stats, .summary { grid-template-columns: 1fr; }
+      .lot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">P</div>
+        <span>AI PARKING</span>
+      </div>
+
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#overview">Overview</a>
+        <a href="/dashboard" class="btn">Open Dashboard</a>
+      </nav>
+    </header>
+
+    <main class="hero" id="overview">
+      <section>
+        <div class="eyebrow"><span class="dot"></span> Smart Parking System</div>
+        <h1>Park smarter.<br>See faster.</h1>
+        <p class="lead">
+          Monitor live occupancy, reduce congestion, and improve parking efficiency with an AI-powered dashboard built for modern facilities.
+        </p>
+
+        <div class="cta-row">
+          <a href="/dashboard" class="button primary">Open Dashboard</a>
+          <a href="#features" class="button secondary">Explore Features</a>
+        </div>
+
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <strong>24/7</strong>
+            <span>Live Tracking</span>
+          </div>
+          <div class="mini-stat">
+            <strong>98%</strong>
+            <span>Availability</span>
+          </div>
+          <div class="mini-stat">
+            <strong>3s</strong>
+            <span>Refresh Rate</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hero-panel" aria-label="Parking dashboard preview">
+        <div class="status-header">
+          <span>Parking Overview</span>
+          <span class="status-badge">Live</span>
+        </div>
+
+        <div class="panel-body">
+          <div class="lot-grid">
+            <div class="lot-dot empty">
+              <div class="icon"></div>
+              <strong>A1</strong>
+              <span>Empty</span>
+            </div>
+            <div class="lot-dot occupied">
+              <div class="icon"></div>
+              <strong>A2</strong>
+              <span>Busy</span>
+            </div>
+            <div class="lot-dot empty">
+              <div class="icon"></div>
+              <strong>A3</strong>
+              <span>Empty</span>
+            </div>
+            <div class="lot-dot occupied">
+              <div class="icon"></div>
+              <strong>B1</strong>
+              <span>Busy</span>
+            </div>
+            <div class="lot-dot empty">
+              <div class="icon"></div>
+              <strong>B2</strong>
+              <span>Empty</span>
+            </div>
+            <div class="lot-dot occupied">
+              <div class="icon"></div>
+              <strong>B3</strong>
+              <span>Busy</span>
+            </div>
+          </div>
+
+          <div class="summary">
+            <div class="summary-box">
+              <strong>12</strong>
+              <span>Available</span>
+            </div>
+            <div class="summary-box">
+              <strong>8</strong>
+              <span>Occupied</span>
+            </div>
+            <div class="summary-box">
+              <strong>20</strong>
+              <span>Total</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <section class="features" id="features">
+      <div class="section-head">
+        <h2>Built for efficient parking management</h2>
+        <p>Adaptive monitoring for real-world operations.</p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon">📍</div>
+          <h3>Live occupancy views</h3>
+          <p>Track each parking slot in real time and instantly identify available spaces to reduce driver confusion.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">🤖</div>
+          <h3>AI-powered detection</h3>
+          <p>Use intelligent recognition to classify empty and occupied spots with minimal manual configuration.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">📊</div>
+          <h3>Operational insights</h3>
+          <p>View key totals and patterns so site managers can optimize entry flow, usage, and resource planning.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
