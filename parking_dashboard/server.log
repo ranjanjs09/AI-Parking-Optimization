@@ -1,6 +1,7 @@
 Starting Parking Dashboard server...
 Dashboard: http://localhost:5001
 API:       http://localhost:5001/api/status
+Predict API: http://localhost:5001/api/predict
  * Serving Flask app 'app'
  * Debug mode: on
 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
@@ -8,32 +9,9 @@ API:       http://localhost:5001/api/status
  * Running on http://127.0.0.1:5001
  * Running on http://192.168.0.101:5001
 [33mPress CTRL+C to quit[0m
-127.0.0.1 - - [30/Aug/2026 00:24:11] "GET /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:24:46] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:24:51] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:24:56] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:01] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:06] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:11] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:16] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:21] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:26] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:31] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:36] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:42] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:45] "GET /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:45] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-127.0.0.1 - - [30/Aug/2026 00:25:47] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:52] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:25:57] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:02] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:07] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:12] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:17] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:22] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:27] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:32] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:37] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:42] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:47] "POST /api/status HTTP/1.1" 200 -
-127.0.0.1 - - [30/Aug/2026 00:26:53] "POST /api/status HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 18:09:39] "GET /api/predict HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 18:09:51] "POST /api/status HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 18:09:52] "GET /api/status HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 18:09:52] "POST /api/predict HTTP/1.1" 200 -
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/multiprocessing/resource_tracker.py:475: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-jrwquqw4'}
+  warnings.warn(

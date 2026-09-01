@@ -17,6 +17,11 @@ state = {
     "available": 0,
 }
 
+predictions_state = {
+    "predictions": {},
+    "last_updated": None,
+}
+
 
 def load_state_from_disk():
     if os.path.exists(STATUS_FILE):
@@ -43,7 +48,7 @@ def recompute_counts():
 
 
 @app.route("/")
-def welcome_page():
+def welcome():
     return send_from_directory("static", "welcome.html")
 
 
@@ -73,10 +78,30 @@ def update_status():
     return jsonify({"message": "Status updated", "state": state})
 
 
+@app.route("/api/predict", methods=["GET"])
+def get_predictions():
+    with lock:
+        return jsonify(predictions_state)
+
+
+@app.route("/api/predict", methods=["POST"])
+def update_predictions():
+    new_predictions = request.get_json(force=True)
+    if not isinstance(new_predictions, dict):
+        return jsonify({"error": "Body must be a JSON object"}), 400
+
+    with lock:
+        predictions_state["predictions"] = new_predictions
+        predictions_state["last_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    return jsonify({"message": "Predictions updated"})
+
+
 if __name__ == "__main__":
     load_state_from_disk()
     port = int(os.environ.get("PORT", 5001))
     print("Starting Parking Dashboard server...")
     print(f"Dashboard: http://localhost:{port}")
     print(f"API:       http://localhost:{port}/api/status")
+    print(f"Predict API: http://localhost:{port}/api/predict")
     app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
