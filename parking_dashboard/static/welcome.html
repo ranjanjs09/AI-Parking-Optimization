@@ -6,20 +6,21 @@
   <title>AI Parking Optimization</title>
   <style>
     :root {
-      --bg: #070707;
-      --bg-2: #121212;
-      --panel: rgba(20, 20, 20, 0.9);
-      --panel-soft: rgba(31, 31, 31, 0.9);
-      --border: rgba(255,255,255,0.08);
+      --bg: #020303;
+      --bg-2: #0d1013;
+      --bg-3: #171b1f;
+      --panel: rgba(12, 14, 17, 0.76);
+      --panel-soft: rgba(22, 25, 29, 0.9);
+      --border: rgba(255,255,255,0.12);
       --text: #f5f5f5;
-      --muted: #b7b7b7;
-      --steel: #d7d7d7;
-      --accent: #d1d5db;
-      --accent-2: #9ca3af;
-      --success: #7dd3a8;
-      --warning: #fbbf24;
-      --danger: #f87171;
-      --shadow: 0 28px 60px rgba(0,0,0,0.45);
+      --muted: #c7ccd1;
+      --steel: #edf0f2;
+      --accent: #f3f4f6;
+      --accent-2: #d1d5db;
+      --success: #f5f5f5;
+      --warning: #d4d4d4;
+      --danger: #d1d1d1;
+      --shadow: 0 28px 60px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
     * { box-sizing: border-box; }
@@ -30,8 +31,9 @@
       margin: 0;
       font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 26%),
-        linear-gradient(135deg, var(--bg), var(--bg-2));
+        radial-gradient(circle at top left, rgba(255,255,255,0.12), transparent 20%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 28%),
+        linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 42%, var(--bg-3) 100%);
       color: var(--text);
       min-height: 100vh;
     }
@@ -51,8 +53,10 @@
       padding: 18px 22px;
       border: 1px solid var(--border);
       border-radius: 18px;
-      background: rgba(18, 18, 18, 0.9);
+      background: linear-gradient(180deg, rgba(15,17,19,0.8), rgba(10,12,15,0.92));
       box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     .brand {
@@ -160,8 +164,9 @@
     .button:hover { transform: translateY(-1px); }
 
     .button.primary {
-      background: linear-gradient(135deg, #e5e7eb, #a3a3a3);
+      background: linear-gradient(135deg, #f3f4f6, #a3a3a3);
       color: #111;
+      box-shadow: 0 12px 28px rgba(255,255,255,0.08);
     }
 
     .button.secondary {
@@ -199,11 +204,13 @@
     }
 
     .hero-panel {
-      background: linear-gradient(180deg, rgba(22,22,22,0.96), rgba(12,12,12,0.96));
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(17,20,24,0.88), rgba(10,12,15,0.96));
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 28px;
       box-shadow: var(--shadow);
       overflow: hidden;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
     .status-header {
@@ -225,9 +232,9 @@
       gap: 8px;
       padding: 7px 10px;
       border-radius: 999px;
-      background: rgba(125, 211, 168, 0.08);
+      background: rgba(255, 255, 255, 0.04);
       color: var(--success);
-      border: 1px solid rgba(125, 211, 168, 0.24);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .panel-body { padding: 22px 20px 18px; }
@@ -243,8 +250,9 @@
       padding: 16px 10px;
       text-align: center;
       border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, rgba(28,31,35,0.9), rgba(14,16,19,0.95));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .lot-dot .icon {
@@ -326,11 +334,13 @@
     }
 
     .card {
-      background: rgba(19, 19, 19, 0.92);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(21, 24, 28, 0.9), rgba(11, 13, 17, 0.96));
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 22px;
       padding: 24px 20px;
       box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     .card-icon {
