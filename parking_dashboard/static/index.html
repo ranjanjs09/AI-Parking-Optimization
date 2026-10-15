@@ -120,6 +120,7 @@
     .stat-available .num { color: var(--empty-color); }
     .stat-occupied .num { color: var(--occupied-color); }
     .stat-total .num { color: var(--muted-strong); }
+    .stat-reserved .num { color: #c4b5fd; }
 
     #grid {
         display: grid;
@@ -181,6 +182,61 @@
 
     .spot.empty .label { color: var(--empty-color); }
     .spot.occupied .label { color: var(--occupied-color); }
+    .spot.reserved { border-color: rgba(196, 181, 253, 0.65); }
+    .spot .booking-info {
+        color: #c4b5fd;
+        font-size: 0.72rem;
+        margin-top: 8px;
+        overflow-wrap: anywhere;
+    }
+    .spot-action {
+        margin-top: 12px;
+        padding: 8px 12px;
+        border-radius: 9px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.07);
+        color: var(--text);
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .spot-action:hover { background: rgba(255,255,255,0.14); }
+    .spot-action:disabled { opacity: 0.55; cursor: wait; }
+
+    #booking-notice {
+        min-height: 1.4em;
+        margin: 14px 0;
+        color: #c4b5fd;
+        font-size: 0.88rem;
+    }
+
+    dialog {
+        width: min(420px, calc(100% - 32px));
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: linear-gradient(180deg, #1c2024, #0d1013);
+        color: var(--text);
+        box-shadow: var(--shadow);
+    }
+    dialog::backdrop { background: rgba(0,0,0,0.72); backdrop-filter: blur(5px); }
+    .booking-form { padding: 24px; }
+    .booking-form h2 { margin: 0 0 8px; }
+    .booking-form p { color: var(--muted); margin: 0 0 20px; }
+    .booking-form label { display: block; font-size: 0.85rem; margin-bottom: 8px; }
+    .booking-form input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(0,0,0,0.28);
+        color: var(--text);
+        font: inherit;
+    }
+    .booking-form input:focus { outline: 2px solid #c4b5fd; outline-offset: 1px; }
+    .booking-form .form-error { min-height: 1.2em; color: #fca5a5; font-size: 0.82rem; margin-top: 10px; }
+    .booking-form .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 
     #empty-state {
         color: var(--muted);
@@ -225,11 +281,15 @@
         <div class="stats">
             <div class="stat-card stat-available">
                 <div class="num" id="stat-available">-</div>
-                <div class="label">Available</div>
+                <div class="label">Bookable</div>
             </div>
             <div class="stat-card stat-occupied">
                 <div class="num" id="stat-occupied">-</div>
                 <div class="label">Occupied</div>
+            </div>
+            <div class="stat-card stat-reserved">
+                <div class="num" id="stat-reserved">-</div>
+                <div class="label">Reserved</div>
             </div>
             <div class="stat-card stat-total">
                 <div class="num" id="stat-total">-</div>
@@ -239,6 +299,7 @@
     </header>
 
     <div id="grid"></div>
+    <div id="booking-notice" role="status" aria-live="polite"></div>
     <div id="empty-state">
         No data available yet. <br>
         Run <code>push_live_status.py</code> or POST to <code>/api/status</code>.
@@ -247,22 +308,114 @@
     <footer>Auto-refreshing every 3 seconds &middot; AI Parking Optimization</footer>
 </div>
 
+<dialog id="booking-modal" aria-labelledby="booking-title">
+    <form class="booking-form" id="booking-form">
+        <h2 id="booking-title">Reserve a parking spot</h2>
+        <p id="booking-description"></p>
+        <label for="booking-name">Your name</label>
+        <input id="booking-name" name="name" maxlength="80" autocomplete="name" required>
+        <div class="form-error" id="booking-error" role="alert"></div>
+        <div class="form-actions">
+            <button class="spot-action" type="button" id="booking-close">Cancel</button>
+            <button class="spot-action" type="submit">Confirm booking</button>
+        </div>
+    </form>
+</dialog>
+
 <script>
+let currentBookings = {};
+let selectedSpotId = null;
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
+function openBooking(spotId) {
+    selectedSpotId = spotId;
+    document.getElementById('booking-description').textContent = `Reserve ${spotId} now.`;
+    document.getElementById('booking-error').textContent = '';
+    document.getElementById('booking-name').value = '';
+    document.getElementById('booking-modal').showModal();
+    document.getElementById('booking-name').focus();
+}
+
+function showBookingNotice(message) {
+    document.getElementById('booking-notice').textContent = message;
+}
+
+async function cancelBooking(spotId) {
+    try {
+        const response = await fetch(`/api/bookings/${encodeURIComponent(spotId)}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Unable to cancel booking');
+        await refreshStatus();
+        showBookingNotice(`Booking for ${spotId} cancelled.`);
+    } catch (err) {
+        console.error('Failed to cancel booking', err);
+        showBookingNotice(err.message);
+    }
+}
+
+document.getElementById('booking-close').addEventListener('click', () => {
+    document.getElementById('booking-modal').close();
+});
+
+document.getElementById('booking-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const spotId = selectedSpotId;
+    const errorElement = document.getElementById('booking-error');
+    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    errorElement.textContent = '';
+    try {
+        const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                spot_id: spotId,
+                name: document.getElementById('booking-name').value
+            })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Unable to book parking spot');
+        document.getElementById('booking-modal').close();
+        await refreshStatus();
+        showBookingNotice(`${spotId} booked successfully.`);
+    } catch (err) {
+        errorElement.textContent = err.message;
+    } finally {
+        submitButton.disabled = false;
+    }
+});
+
 async function refreshStatus() {
     try {
-        const res = await fetch('/api/status');
-        const data = await res.json();
+        const [statusResponse, bookingsResponse] = await Promise.all([
+            fetch('/api/status'),
+            fetch('/api/bookings')
+        ]);
+        if (!statusResponse.ok || !bookingsResponse.ok) throw new Error('Unable to load parking data');
+        const data = await statusResponse.json();
+        currentBookings = await bookingsResponse.json();
 
-        document.getElementById('stat-available').textContent = data.available;
+        const spots = data.spots || {};
+        const spotIds = Object.keys(spots);
+        const availableCount = spotIds.filter(id => spots[id] === 'empty' && !currentBookings[id]).length;
+        document.getElementById('stat-available').textContent = availableCount;
         document.getElementById('stat-occupied').textContent = data.occupied;
+        document.getElementById('stat-reserved').textContent = Object.keys(currentBookings).length;
         document.getElementById('stat-total').textContent = data.total;
         document.getElementById('last-updated').textContent =
             data.last_updated ? `Last updated: ${data.last_updated}` : 'Waiting for data...';
 
         const grid = document.getElementById('grid');
         const emptyState = document.getElementById('empty-state');
-        const spots = data.spots || {};
-        const spotIds = Object.keys(spots);
 
         if (spotIds.length === 0) {
             grid.style.display = 'none';
@@ -274,14 +427,32 @@ async function refreshStatus() {
 
         grid.innerHTML = spotIds.map(id => {
             const status = spots[id];
+            const booking = currentBookings[id];
+            const safeId = escapeHtml(id);
+            const bookingInfo = booking
+                ? `<div class="booking-info">Reserved by ${escapeHtml(booking.name)}</div>`
+                : '';
+            const action = booking
+                ? `<button class="spot-action cancel-booking" data-spot-id="${safeId}">Cancel booking</button>`
+                : status === 'empty'
+                    ? `<button class="spot-action book-spot" data-spot-id="${safeId}">Book this spot</button>`
+                    : '';
             return `
-                <div class="spot ${status}">
+                <div class="spot ${status === 'occupied' ? 'occupied' : 'empty'} ${booking ? 'reserved' : ''}">
                     <div class="dot"></div>
-                    <div class="id">${id}</div>
-                    <div class="label">${status}</div>
+                    <div class="id">${safeId}</div>
+                    <div class="label">${booking ? 'Reserved' : escapeHtml(status)}</div>
+                    ${bookingInfo}
+                    ${action}
                 </div>
             `;
         }).join('');
+        grid.querySelectorAll('.book-spot').forEach(button => {
+            button.addEventListener('click', () => openBooking(button.dataset.spotId));
+        });
+        grid.querySelectorAll('.cancel-booking').forEach(button => {
+            button.addEventListener('click', () => cancelBooking(button.dataset.spotId));
+        });
     } catch (err) {
         console.error('Failed to fetch status', err);
     }

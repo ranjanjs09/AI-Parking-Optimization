@@ -7,6 +7,7 @@ import threading
 app = Flask(__name__, static_folder="static")
 
 STATUS_FILE = os.path.join(os.path.dirname(__file__), "current_status.json")
+BOOKINGS_FILE = os.path.join(os.path.dirname(__file__), "bookings.json")
 lock = threading.Lock()
 
 state = {
@@ -22,6 +23,8 @@ predictions_state = {
     "last_updated": None,
 }
 
+bookings = {}
+
 
 def load_state_from_disk():
     if os.path.exists(STATUS_FILE):
@@ -33,9 +36,23 @@ def load_state_from_disk():
             pass
 
 
+def load_bookings_from_disk():
+    if os.path.exists(BOOKINGS_FILE):
+        with open(BOOKINGS_FILE, "r") as f:
+            saved = json.load(f)
+        if not isinstance(saved, dict):
+            raise ValueError("Bookings file must contain a JSON object")
+        bookings.update(saved)
+
+
 def save_state_to_disk():
     with open(STATUS_FILE, "w") as f:
         json.dump(state, f, indent=2)
+
+
+def save_bookings_to_disk():
+    with open(BOOKINGS_FILE, "w") as f:
+        json.dump(bookings, f, indent=2)
 
 
 def recompute_counts():
@@ -78,6 +95,56 @@ def update_status():
     return jsonify({"message": "Status updated", "state": state})
 
 
+@app.route("/api/bookings", methods=["GET"])
+def get_bookings():
+    with lock:
+        return jsonify(bookings)
+
+
+@app.route("/api/bookings", methods=["POST"])
+def create_booking():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Body must be a JSON object"}), 400
+
+    name = payload.get("name")
+    if not isinstance(name, str) or not name.strip() or len(name.strip()) > 80:
+        return jsonify({"error": "Name must be between 1 and 80 characters"}), 400
+
+    spot_id = payload.get("spot_id")
+    if not isinstance(spot_id, str) or not spot_id:
+        return jsonify({"error": "spot_id is required"}), 400
+
+    with lock:
+        if spot_id not in state["spots"]:
+            return jsonify({"error": "Parking spot not found"}), 404
+        if state["spots"][spot_id] != "empty":
+            return jsonify({"error": "This parking spot is occupied"}), 409
+        if spot_id in bookings:
+            return jsonify({"error": "This parking spot is already booked"}), 409
+
+        booking = {
+            "spot_id": spot_id,
+            "name": name.strip(),
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        bookings[spot_id] = booking
+        save_bookings_to_disk()
+
+    return jsonify({"message": "Parking spot booked", "booking": booking}), 201
+
+
+@app.route("/api/bookings/<spot_id>", methods=["DELETE"])
+def cancel_booking(spot_id):
+    with lock:
+        if spot_id not in bookings:
+            return jsonify({"error": "Booking not found"}), 404
+        del bookings[spot_id]
+        save_bookings_to_disk()
+
+    return jsonify({"message": "Booking cancelled"})
+
+
 @app.route("/api/predict", methods=["GET"])
 def get_predictions():
     with lock:
@@ -99,6 +166,7 @@ def update_predictions():
 
 if __name__ == "__main__":
     load_state_from_disk()
+    load_bookings_from_disk()
     port = int(os.environ.get("PORT", 5001))
     print("Starting Parking Dashboard server...")
     print(f"Dashboard: http://localhost:{port}")
