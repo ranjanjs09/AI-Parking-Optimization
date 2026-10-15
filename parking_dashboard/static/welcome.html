@@ -6,21 +6,21 @@
   <title>AI Parking Optimization</title>
   <style>
     :root {
-      --bg: #020303;
-      --bg-2: #0d1013;
-      --bg-3: #171b1f;
-      --panel: rgba(12, 14, 17, 0.76);
-      --panel-soft: rgba(22, 25, 29, 0.9);
-      --border: rgba(255,255,255,0.12);
-      --text: #f5f5f5;
-      --muted: #c7ccd1;
-      --steel: #edf0f2;
-      --accent: #f3f4f6;
-      --accent-2: #d1d5db;
-      --success: #f5f5f5;
-      --warning: #d4d4d4;
-      --danger: #d1d1d1;
-      --shadow: 0 28px 60px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,255,255,0.06);
+      --bg: #07111f;
+      --bg-2: #0b1b2b;
+      --bg-3: #102a3a;
+      --panel: rgba(12, 27, 43, 0.82);
+      --panel-soft: rgba(22, 47, 68, 0.9);
+      --border: rgba(177, 211, 231, 0.15);
+      --text: #eef7fb;
+      --muted: #a7c0ce;
+      --steel: #e6f4f9;
+      --accent: #55e0b5;
+      --accent-2: #68d9e8;
+      --success: #43e0b0;
+      --warning: #f4c95d;
+      --danger: #ff7c87;
+      --shadow: 0 28px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     * { box-sizing: border-box; }
@@ -31,9 +31,9 @@
       margin: 0;
       font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(255,255,255,0.12), transparent 20%),
-        radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 28%),
-        linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 42%, var(--bg-3) 100%);
+        radial-gradient(ellipse at 8% 0%, rgba(57, 215, 195, 0.16), transparent 30%),
+        radial-gradient(ellipse at 92% 18%, rgba(89, 145, 255, 0.15), transparent 28%),
+        linear-gradient(145deg, var(--bg) 0%, var(--bg-2) 48%, var(--bg-3) 100%);
       color: var(--text);
       min-height: 100vh;
     }
@@ -53,7 +53,7 @@
       padding: 18px 22px;
       border: 1px solid var(--border);
       border-radius: 18px;
-      background: linear-gradient(180deg, rgba(15,17,19,0.8), rgba(10,12,15,0.92));
+      background: linear-gradient(135deg, rgba(18, 39, 58, 0.9), rgba(10, 25, 41, 0.93));
       box-shadow: var(--shadow);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -73,8 +73,10 @@
       border-radius: 12px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, #1d1d1d, #090909);
+      background: linear-gradient(145deg, #38d9bb, #477bdb);
       border: 1px solid var(--border);
+      color: #071721;
+      box-shadow: 0 8px 24px rgba(56, 217, 187, 0.2);
       font-size: 1.2rem;
     }
 
@@ -90,7 +92,7 @@
     .nav a:hover { color: var(--text); }
 
     .nav .btn {
-      background: rgba(255,255,255,0.04);
+      background: rgba(104, 217, 232, 0.09);
       border: 1px solid var(--border);
       color: var(--text);
       padding: 10px 16px;
@@ -116,7 +118,7 @@
       text-transform: uppercase;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.035);
       color: var(--muted);
     }
 
@@ -133,6 +135,13 @@
       line-height: 0.96;
       letter-spacing: -0.06em;
       margin: 20px 0 16px;
+    }
+
+    .headline-accent {
+      background: linear-gradient(100deg, #55e0b5, #68d9e8 62%, #8ba9ff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
     }
 
     .lead {
@@ -164,9 +173,9 @@
     .button:hover { transform: translateY(-1px); }
 
     .button.primary {
-      background: linear-gradient(135deg, #f3f4f6, #a3a3a3);
-      color: #111;
-      box-shadow: 0 12px 28px rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, #55e0b5, #68d9e8);
+      color: #06201f;
+      box-shadow: 0 12px 28px rgba(67, 224, 176, 0.18);
     }
 
     .button.secondary {
@@ -185,7 +194,7 @@
       min-width: 110px;
       padding: 16px 18px;
       border-radius: 16px;
-      background: rgba(255,255,255,0.02);
+      background: rgba(17, 41, 61, 0.72);
       border: 1px solid var(--border);
     }
 
@@ -204,13 +213,22 @@
     }
 
     .hero-panel {
-      background: linear-gradient(180deg, rgba(17,20,24,0.88), rgba(10,12,15,0.96));
+      background: linear-gradient(145deg, rgba(20, 47, 68, 0.94), rgba(10, 27, 44, 0.97));
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 28px;
       box-shadow: var(--shadow);
       overflow: hidden;
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      position: relative;
+    }
+
+    .hero-panel::before {
+      content: "";
+      display: block;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+      opacity: 0.8;
     }
 
     .status-header {
@@ -219,7 +237,7 @@
       align-items: center;
       padding: 18px 20px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+      background: rgba(104, 217, 232, 0.04);
       color: var(--steel);
       font-size: 0.82rem;
       letter-spacing: 0.08em;
@@ -251,7 +269,7 @@
       text-align: center;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.12);
-      background: linear-gradient(180deg, rgba(28,31,35,0.9), rgba(14,16,19,0.95));
+      background: linear-gradient(155deg, rgba(27, 57, 78, 0.92), rgba(14, 34, 51, 0.96));
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
@@ -263,7 +281,7 @@
       box-shadow: 0 0 18px rgba(255,255,255,0.18);
     }
 
-    .lot-dot.empty .icon { background: var(--success); }
+    .lot-dot.empty .icon { background: var(--success); color: var(--success); box-shadow: 0 0 18px rgba(67, 224, 176, 0.48); }
     .lot-dot.occupied .icon { background: var(--danger); }
 
     .lot-dot strong {
@@ -288,7 +306,7 @@
     .summary-box {
       padding: 14px 12px;
       border-radius: 12px;
-      background: rgba(255,255,255,0.02);
+      background: rgba(104, 217, 232, 0.045);
       border: 1px solid var(--border);
     }
 
@@ -329,19 +347,22 @@
 
     .cards {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 20px;
     }
 
     .card {
-      background: linear-gradient(180deg, rgba(21, 24, 28, 0.9), rgba(11, 13, 17, 0.96));
+      background: linear-gradient(145deg, rgba(20, 47, 68, 0.92), rgba(10, 27, 44, 0.97));
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 22px;
       padding: 24px 20px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
+
+    .card:hover { transform: translateY(-4px); border-color: rgba(85, 224, 181, 0.42); }
 
     .card-icon {
       width: 44px;
@@ -349,7 +370,7 @@
       border-radius: 12px;
       display: grid;
       place-items: center;
-      background: rgba(255,255,255,0.04);
+      background: rgba(104, 217, 232, 0.08);
       border: 1px solid var(--border);
       font-size: 1.2rem;
       margin-bottom: 18px;
@@ -368,7 +389,7 @@
 
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; }
-      .cards { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 560px) {
@@ -378,9 +399,19 @@
         gap: 14px;
       }
 
-      .nav { flex-wrap: wrap; }
-      .mini-stats, .summary { grid-template-columns: 1fr; }
+      .nav { flex-wrap: wrap; gap: 12px; }
+      .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+      .summary { grid-template-columns: 1fr; }
       .lot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 390px) {
+      .mini-stats { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
@@ -402,7 +433,7 @@
     <main class="hero" id="overview">
       <section>
         <div class="eyebrow"><span class="dot"></span> Smart Parking System</div>
-        <h1>Park smarter.<br>See faster.</h1>
+        <h1>Park smarter.<br><span class="headline-accent">See faster.</span></h1>
         <p class="lead">
           Monitor live occupancy, reduce congestion, and improve parking efficiency with an AI-powered dashboard built for modern facilities.
         </p>
@@ -509,6 +540,12 @@
           <div class="card-icon">📊</div>
           <h3>Operational insights</h3>
           <p>View key totals and patterns so site managers can optimize entry flow, usage, and resource planning.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">🔖</div>
+          <h3>Simple reservations</h3>
+          <p>Let drivers reserve an available space and keep bookings visible alongside live occupancy.</p>
         </article>
       </div>
     </section>
