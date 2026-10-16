@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Parking Optimization</title>
+  <meta name="description" content="Monitor parking occupancy, explore availability forecasts, and manage reservations with AI Parking Optimization." />
   <style>
     :root {
       --bg: #07111f;
@@ -255,22 +256,25 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
-    .panel-body { padding: 22px 20px 18px; }
+    .status-badge.waiting { color: var(--warning); }
+    .status-badge.offline { color: var(--danger); }
 
-    .lot-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 12px currentColor;
     }
+
+    .panel-body { padding: 22px 20px 18px; }
 
     .lot-dot {
       padding: 16px 10px;
       text-align: center;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.12);
-      background: linear-gradient(155deg, rgba(27, 57, 78, 0.92), rgba(14, 34, 51, 0.96));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .lot-dot .icon {
@@ -280,9 +284,6 @@
       margin: 0 auto 10px;
       box-shadow: 0 0 18px rgba(255,255,255,0.18);
     }
-
-    .lot-dot.empty .icon { background: var(--success); color: var(--success); box-shadow: 0 0 18px rgba(67, 224, 176, 0.48); }
-    .lot-dot.occupied .icon { background: var(--danger); }
 
     .lot-dot strong {
       display: block;
@@ -296,6 +297,56 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+
+    .preview-updated {
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin: 0 0 14px;
+    }
+
+    .preview-empty {
+      display: grid;
+      min-height: 150px;
+      place-content: center;
+      gap: 8px;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .preview-empty strong {
+      color: var(--steel);
+      font-size: 0.95rem;
+    }
+
+    .preview-empty span {
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    [hidden] { display: none !important; }
+
+    .lot-dot.unknown .icon { background: var(--muted); }
+
+    .lot-dot.unknown span { color: var(--warning); }
+
+    .lot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .lot-dot {
+      background: linear-gradient(155deg, rgba(27, 57, 78, 0.92), rgba(14, 34, 51, 0.96));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .lot-dot.empty .icon { background: var(--success); color: var(--success); box-shadow: 0 0 18px rgba(67, 224, 176, 0.48); }
+    .lot-dot.occupied .icon { background: var(--danger); }
 
     .summary {
       display: grid;
@@ -347,7 +398,7 @@
 
     .cards {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 20px;
     }
 
@@ -387,9 +438,27 @@
       color: var(--muted);
     }
 
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding-top: 28px;
+      margin-top: 48px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .page-footer a { color: var(--accent); }
+
+    .button:focus-visible, .nav a:focus-visible, .page-footer a:focus-visible {
+      outline: 2px solid var(--accent-2);
+      outline-offset: 4px;
+    }
+
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; }
-      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 560px) {
@@ -403,7 +472,6 @@
       .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
       .summary { grid-template-columns: 1fr; }
       .lot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .cards { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 390px) {
@@ -433,9 +501,9 @@
     <main class="hero" id="overview">
       <section>
         <div class="eyebrow"><span class="dot"></span> Smart Parking System</div>
-        <h1>Park smarter.<br><span class="headline-accent">See faster.</span></h1>
+        <h1>Find your space.<br><span class="headline-accent">Skip the search.</span></h1>
         <p class="lead">
-          Monitor live occupancy, reduce congestion, and improve parking efficiency with an AI-powered dashboard built for modern facilities.
+          Welcome to a smarter way to park. See live space availability, explore occupancy forecasts, and reserve an open spot from one simple dashboard.
         </p>
 
         <div class="cta-row">
@@ -445,16 +513,16 @@
 
         <div class="mini-stats">
           <div class="mini-stat">
-            <strong>24/7</strong>
-            <span>Live Tracking</span>
+            <strong>Live</strong>
+            <span>Spot status</span>
           </div>
           <div class="mini-stat">
-            <strong>98%</strong>
-            <span>Availability</span>
+            <strong>AI</strong>
+            <span>Occupancy detection</span>
           </div>
           <div class="mini-stat">
-            <strong>3s</strong>
-            <span>Refresh Rate</span>
+            <strong>15 min</strong>
+            <span>Availability forecast</span>
           </div>
         </div>
       </section>
@@ -462,54 +530,31 @@
       <aside class="hero-panel" aria-label="Parking dashboard preview">
         <div class="status-header">
           <span>Parking Overview</span>
-          <span class="status-badge">Live</span>
+          <span class="status-badge waiting" id="connection-status">
+            <span class="dot"></span>
+            <span id="connection-label">Connecting</span>
+          </span>
         </div>
 
         <div class="panel-body">
-          <div class="lot-grid">
-            <div class="lot-dot empty">
-              <div class="icon"></div>
-              <strong>A1</strong>
-              <span>Empty</span>
-            </div>
-            <div class="lot-dot occupied">
-              <div class="icon"></div>
-              <strong>A2</strong>
-              <span>Busy</span>
-            </div>
-            <div class="lot-dot empty">
-              <div class="icon"></div>
-              <strong>A3</strong>
-              <span>Empty</span>
-            </div>
-            <div class="lot-dot occupied">
-              <div class="icon"></div>
-              <strong>B1</strong>
-              <span>Busy</span>
-            </div>
-            <div class="lot-dot empty">
-              <div class="icon"></div>
-              <strong>B2</strong>
-              <span>Empty</span>
-            </div>
-            <div class="lot-dot occupied">
-              <div class="icon"></div>
-              <strong>B3</strong>
-              <span>Busy</span>
-            </div>
+          <div class="preview-updated" id="preview-updated">Checking live parking data…</div>
+          <div class="preview-empty" id="preview-empty">
+            <strong>Getting your parking view ready</strong>
+            <span>Live availability will appear here as soon as your dashboard receives spot data.</span>
           </div>
+          <div class="lot-grid" id="preview-grid" aria-label="Live parking spot preview" hidden></div>
 
           <div class="summary">
             <div class="summary-box">
-              <strong>12</strong>
+              <strong id="preview-available">—</strong>
               <span>Available</span>
             </div>
             <div class="summary-box">
-              <strong>8</strong>
+              <strong id="preview-occupied">—</strong>
               <span>Occupied</span>
             </div>
             <div class="summary-box">
-              <strong>20</strong>
+              <strong id="preview-total">—</strong>
               <span>Total</span>
             </div>
           </div>
@@ -543,12 +588,88 @@
         </article>
 
         <article class="card">
+          <div class="card-icon">⏱️</div>
+          <h3>Availability forecasts</h3>
+          <p>See predicted spot availability alongside current occupancy to make more informed parking decisions.</p>
+        </article>
+
+        <article class="card">
           <div class="card-icon">🔖</div>
           <h3>Simple reservations</h3>
           <p>Let drivers reserve an available space and keep bookings visible alongside live occupancy.</p>
         </article>
       </div>
     </section>
+
+    <footer class="page-footer">
+      <span>AI Parking Optimization · Smarter parking starts here.</span>
+      <a href="/dashboard">Go to the parking dashboard →</a>
+    </footer>
   </div>
+  <script>
+    const previewGrid = document.getElementById("preview-grid");
+    const previewEmpty = document.getElementById("preview-empty");
+    const connectionStatus = document.getElementById("connection-status");
+    const connectionLabel = document.getElementById("connection-label");
+
+    function setConnectionStatus(status, label) {
+      connectionStatus.className = `status-badge ${status}`;
+      connectionLabel.textContent = label;
+    }
+
+    function createSpotCard(id, value) {
+      const status = value === "empty" || value === "occupied" ? value : "unknown";
+      const card = document.createElement("div");
+      card.className = `lot-dot ${status}`;
+
+      const icon = document.createElement("div");
+      icon.className = "icon";
+      const name = document.createElement("strong");
+      name.textContent = id;
+      const label = document.createElement("span");
+      label.textContent = status === "empty" ? "Available" : status === "occupied" ? "Occupied" : "Unknown";
+
+      card.append(icon, name, label);
+      return card;
+    }
+
+    async function refreshPreview() {
+      try {
+        const response = await fetch("/api/status", { headers: { Accept: "application/json" } });
+        if (!response.ok) throw new Error(`Status request failed (${response.status})`);
+
+        const data = await response.json();
+        const spots = data.spots && typeof data.spots === "object" && !Array.isArray(data.spots)
+          ? Object.entries(data.spots)
+          : [];
+        const available = spots.filter(([, status]) => status === "empty").length;
+        const occupied = spots.filter(([, status]) => status === "occupied").length;
+
+        document.getElementById("preview-available").textContent = available;
+        document.getElementById("preview-occupied").textContent = occupied;
+        document.getElementById("preview-total").textContent = spots.length;
+
+        previewGrid.replaceChildren(...spots.slice(0, 6).map(([id, status]) => createSpotCard(id, status)));
+        previewGrid.hidden = spots.length === 0;
+        previewEmpty.hidden = spots.length > 0;
+        if (spots.length === 0) {
+          previewEmpty.querySelector("strong").textContent = "No live parking data yet";
+          previewEmpty.querySelector("span").textContent = "Start occupancy detection or send spot data to see availability here.";
+        }
+
+        document.getElementById("preview-updated").textContent = data.last_updated
+          ? `Last updated ${data.last_updated}`
+          : "Live dashboard connected";
+        setConnectionStatus("live", "Live");
+      } catch (error) {
+        document.getElementById("preview-updated").textContent = "Live data is temporarily unavailable. Retrying shortly.";
+        setConnectionStatus("offline", "Offline");
+        console.error("Unable to load parking preview", error);
+      }
+    }
+
+    refreshPreview();
+    window.setInterval(refreshPreview, 3000);
+  </script>
 </body>
 </html>
