@@ -3,11 +3,13 @@ from datetime import datetime
 import os
 import json
 import threading
+import uuid
 
 app = Flask(__name__, static_folder="static")
 
 STATUS_FILE = os.path.join(os.path.dirname(__file__), "current_status.json")
 BOOKINGS_FILE = os.path.join(os.path.dirname(__file__), "bookings.json")
+BOOKING_HISTORY_FILE = os.path.join(os.path.dirname(__file__), "booking_history.json")
 lock = threading.Lock()
 
 state = {
@@ -24,6 +26,7 @@ predictions_state = {
 }
 
 bookings = {}
+booking_history = []
 
 
 def load_state_from_disk():
@@ -37,12 +40,40 @@ def load_state_from_disk():
 
 
 def load_bookings_from_disk():
+    bookings_changed = False
     if os.path.exists(BOOKINGS_FILE):
         with open(BOOKINGS_FILE, "r") as f:
             saved = json.load(f)
         if not isinstance(saved, dict):
             raise ValueError("Bookings file must contain a JSON object")
         bookings.update(saved)
+
+    if os.path.exists(BOOKING_HISTORY_FILE):
+        with open(BOOKING_HISTORY_FILE, "r") as f:
+            saved_history = json.load(f)
+        if not isinstance(saved_history, list) or any(not isinstance(item, dict) for item in saved_history):
+            raise ValueError("Booking history file must contain a JSON array of booking objects")
+        booking_history.extend(saved_history)
+
+    history_ids = {entry.get("id") for entry in booking_history}
+    for spot_id, booking in bookings.items():
+        if not isinstance(booking, dict):
+            raise ValueError(f"Booking for {spot_id} must be a JSON object")
+        if "id" not in booking:
+            booking["id"] = uuid.uuid4().hex
+            bookings_changed = True
+        if booking["id"] not in history_ids:
+            booking_history.append({
+                **booking,
+                "status": "active",
+                "cancelled_at": None,
+            })
+            history_ids.add(booking["id"])
+            bookings_changed = True
+
+    if bookings_changed:
+        save_bookings_to_disk()
+        save_booking_history_to_disk()
 
 
 def save_state_to_disk():
@@ -53,6 +84,11 @@ def save_state_to_disk():
 def save_bookings_to_disk():
     with open(BOOKINGS_FILE, "w") as f:
         json.dump(bookings, f, indent=2)
+
+
+def save_booking_history_to_disk():
+    with open(BOOKING_HISTORY_FILE, "w") as f:
+        json.dump(booking_history, f, indent=2)
 
 
 def recompute_counts():
@@ -101,6 +137,12 @@ def get_bookings():
         return jsonify(bookings)
 
 
+@app.route("/api/bookings/history", methods=["GET"])
+def get_booking_history():
+    with lock:
+        return jsonify(list(reversed(booking_history)))
+
+
 @app.route("/api/bookings", methods=["POST"])
 def create_booking():
     payload = request.get_json(silent=True)
@@ -124,12 +166,19 @@ def create_booking():
             return jsonify({"error": "This parking spot is already booked"}), 409
 
         booking = {
+            "id": uuid.uuid4().hex,
             "spot_id": spot_id,
             "name": name.strip(),
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
         bookings[spot_id] = booking
+        booking_history.append({
+            **booking,
+            "status": "active",
+            "cancelled_at": None,
+        })
         save_bookings_to_disk()
+        save_booking_history_to_disk()
 
     return jsonify({"message": "Parking spot booked", "booking": booking}), 201
 
@@ -139,6 +188,18 @@ def cancel_booking(spot_id):
     with lock:
         if spot_id not in bookings:
             return jsonify({"error": "Booking not found"}), 404
+        booking = bookings[spot_id]
+        history_entry = next(
+            (entry for entry in reversed(booking_history) if entry.get("id") == booking.get("id")),
+            None,
+        )
+        cancelled_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if history_entry is None:
+            history_entry = {**booking, "status": "active", "cancelled_at": None}
+            booking_history.append(history_entry)
+        history_entry["status"] = "cancelled"
+        history_entry["cancelled_at"] = cancelled_at
+        save_booking_history_to_disk()
         del bookings[spot_id]
         save_bookings_to_disk()
 
